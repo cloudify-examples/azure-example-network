@@ -1,0 +1,117 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+description: >
+  Create an Example Azure Network.
+
+imports:
+  - http://www.getcloudify.org/spec/cloudify/4.2/types.yaml
+  - http://www.getcloudify.org/spec/azure-plugin/1.5.1/plugin.yaml
+
+inputs:
+
+  subscription_id:
+    type: string
+    default: { get_secret: azure_subscription_id }
+
+  tenant_id:
+    type: string
+    default: { get_secret: azure_tenant_id }
+
+  client_id:
+    type: string
+    default: { get_secret: azure_client_id }
+
+  client_secret:
+    type: string
+    default: { get_secret: azure_client_secret }
+
+  location:
+    default: { get_secret: azure_location }
+
+  retry_after:
+    default: 5
+
+  resource_prefix:
+    default: cfy
+
+  resource_suffix:
+    default: 0
+
+  public_subnet_cidr:
+    default: 10.10.0.0/24
+
+  private_subnet_cidr:
+    default: 10.10.1.0/24
+
+dsl_definitions:
+
+  client_config: &client_config
+    subscription_id: { get_input: subscription_id }
+    tenant_id: { get_input: tenant_id }
+    client_id: { get_input: client_id }
+    client_secret: { get_input: client_secret }
+
+node_templates:
+
+  resource_group:
+    type: cloudify.azure.nodes.ResourceGroup
+    properties:
+      azure_config: *client_config
+      name: { concat: [ { get_input: resource_prefix }, 'resource_group', { get_input: resource_suffix } ] }
+      location: { get_input: location }
+
+  virtual_network:
+    type: cloudify.azure.nodes.network.VirtualNetwork
+    properties:
+      azure_config: *client_config
+      name: { concat: [ { get_input: resource_prefix }, 'vnet', { get_input: resource_suffix } ] }
+      location: { get_input: location }
+      retry_after: { get_input: retry_after }
+    relationships:
+      - type: cloudify.azure.relationships.contained_in_resource_group
+        target: resource_group
+
+  public_subnet:
+    type: cloudify.azure.nodes.network.Subnet
+    properties:
+      azure_config: *client_config
+      name: { concat: [ { get_input: resource_prefix }, 'public_subnet', { get_input: resource_suffix } ] }
+      location: { get_input: location }
+      retry_after: { get_input: retry_after }
+      resource_config:
+        addressPrefix: { get_input: public_subnet_cidr }
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_virtual_network
+      target: virtual_network
+
+  private_subnet:
+    type: cloudify.azure.nodes.network.Subnet
+    properties:
+      azure_config: *client_config
+      name: { concat: [ { get_input: resource_prefix }, 'private_subnet', { get_input: resource_suffix } ] }
+      location: { get_input: location }
+      retry_after: { get_input: retry_after }
+      resource_config:
+        addressPrefix: { get_input: private_subnet_cidr }
+    relationships:
+    - type: cloudify.azure.relationships.contained_in_virtual_network
+      target: virtual_network
+    - type: cloudify.relationships.depends_on
+      target: public_subnet
+
+outputs:
+
+  resource_group:
+    value: { get_attribute: [ resource_group, name ] }
+
+  virtual_network:
+    value: { get_attribute: [ virtual_network, name ] }
+
+  public_subnet:
+    value: { get_attribute: [ public_subnet, name ] }
+
+  private_subnet:
+    value: { get_attribute: [ private_subnet, name ] }
+
+  location:
+    value: { get_input: location }
