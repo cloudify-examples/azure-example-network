@@ -4,8 +4,8 @@ description: >
   Create an Example Azure Network.
 
 imports:
-  - http://www.getcloudify.org/spec/cloudify/4.2/types.yaml
-  - http://www.getcloudify.org/spec/azure-plugin/1.5.1/plugin.yaml
+  - http://www.getcloudify.org/spec/cloudify/4.3/types.yaml
+  - plugin:cloudify-azure-plugin
 
 inputs:
 
@@ -38,10 +38,10 @@ inputs:
     default: 0
 
   public_subnet_cidr:
-    default: 10.10.0.0/24
+    default: 10.10.2.0/24
 
   private_subnet_cidr:
-    default: 10.10.1.0/24
+    default: 10.10.3.0/24
 
 dsl_definitions:
 
