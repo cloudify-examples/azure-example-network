@@ -24,7 +24,7 @@ jobs:
       - run: docker run --name cfy_manager -d --restart unless-stopped -v /sys/fs/cgroup:/sys/fs/cgroup:ro --tmpfs /run --tmpfs /run/lock --security-opt seccomp:unconfined --cap-add SYS_ADMIN --network host docker-cfy-manager:latest
       - run: pip install cloudify
       - run: cfy profiles use localhost -u admin -p admin -t default_tenant
-      - run: cfy plugins upload http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/1.6.1/cloudify_azure_plugin-1.6.1-py27-none-linux_x86_64-centos-Core.wgn -y http://www.getcloudify.org/spec/azure-plugin/1.6.1/plugin.yaml
+      - run: cfy plugins upload http://repository.cloudifysource.org/cloudify/wagons/cloudify-azure-plugin/1.6.2/cloudify_azure_plugin-1.6.2-py27-none-linux_x86_64-centos-Core.wgn -y http://www.getcloudify.org/spec/azure-plugin/1.6.2/plugin.yaml
       - run: cfy blueprints upload simple-blueprint.yaml -b bp0 > /dev/null 2>&1
 
 workflows:
